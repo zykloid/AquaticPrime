@@ -65,7 +65,7 @@ Boolean APSetKey(CFStringRef key)
     CFRelease(mutableKey);
     
     
-    SecItemImportExportKeyParameters params = {0};
+    SecItemImportExportKeyParameters params = {0, 0, NULL, NULL, NULL, NULL, NULL, NULL};
     params.version = SEC_KEY_IMPORT_EXPORT_PARAMS_VERSION;
     params.flags = kSecKeyNoAccessControl;
     SecExternalItemType itemType = kSecItemTypePublicKey;
@@ -143,6 +143,7 @@ CFStringRef APPEMKeyCreateFromHexKey(CFStringRef hexKey)
     if (rawKey == NULL) {
         // Failed to import the key (bad hex digit?)
         CFShow(CFSTR("Bad public key?"));
+        CFRelease(keyData);
         return NULL;
     }
     
@@ -162,6 +163,7 @@ CFStringRef APPEMKeyCreateFromHexKey(CFStringRef hexKey)
         if (encoder) {
             CFRelease(encoder);
         }
+        CFRelease(keyData);
         return NULL;
     }
     SecTransformSetAttribute(encoder,
@@ -170,6 +172,7 @@ CFStringRef APPEMKeyCreateFromHexKey(CFStringRef hexKey)
                              &error);
     if (error != NULL) {
         CFRelease(encoder);
+        CFRelease(keyData);
         CFShow(error);
         return NULL;
     }
@@ -198,6 +201,8 @@ CFStringRef APPEMKeyCreateFromHexKey(CFStringRef hexKey)
     
     return pemKey;
 }
+
+CFDataRef APCreateHashFromDictionary(CFDictionaryRef dict);
 
 CFDataRef APCreateHashFromDictionary(CFDictionaryRef dict)
 {
@@ -240,7 +245,7 @@ CFDataRef APCreateHashFromDictionary(CFDictionaryRef dict)
     
     // Build the data
     CFMutableDataRef dictData = CFDataCreateMutable(kCFAllocatorDefault, 0);
-    int keyCount = CFArrayGetCount(keyArray);
+    CFIndex keyCount = CFArrayGetCount(keyArray);
     for (int keyIndex = 0; keyIndex < keyCount; keyIndex++)
     {
         CFStringRef key = CFArrayGetValueAtIndex(keyArray, keyIndex);
@@ -483,10 +488,10 @@ static CFDataRef APCopyDataFromHexString(CFStringRef string)
     
     /* offset into this string is the numeric value */
     char translate[] = "0123456789abcdef";
-    
+
     for ( ; *h; h += 2, ++b) /* go by twos through the hex string */
-        *b = ((strchr(translate, *h) - translate) * 16) /* multiply leading digit by 16 */
-        + ((strchr(translate, *(h+1)) - translate));
+        *b = (UInt8)((strchr(translate, *h) - translate) * 16) /* multiply leading digit by 16 */
+        + (UInt8)((strchr(translate, *(h+1)) - translate));
     
     CFDataRef data = CFDataCreate(kCFAllocatorDefault, buffer, (strlen(cString) / 2));
     free(cString);
