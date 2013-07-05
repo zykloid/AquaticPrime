@@ -60,6 +60,9 @@ static const CGFunctionCallbacks linearFunctionCallbacks = {0, _linearColorBlend
     return [super acceptsFirstMouse:theEvent];
 }
 
+
+#if 0
+
 // NSTableView subclass
 
 - (id)_highlightColorForCell:(NSCell *)cell;
@@ -129,7 +132,7 @@ static const CGFunctionCallbacks linearFunctionCallbacks = {0, _linearColorBlend
     CGFunctionRelease(linearBlendFunctionRef);
     CGColorSpaceRelease(colorSpace);
 }
-
+#endif
 - (void)selectRowIndexes:(NSIndexSet *)indexes byExtendingSelection:(BOOL)extend {
 	[super selectRowIndexes:indexes byExtendingSelection:extend];
 	[self setNeedsDisplay:YES]; // we display extra because we draw multiple contiguous selected rows differently, so changing one row's selection can change how others draw.
