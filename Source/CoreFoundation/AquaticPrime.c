@@ -250,7 +250,14 @@ CFDataRef APCreateHashFromDictionary(CFDictionaryRef dict)
     {
         CFStringRef key = CFArrayGetValueAtIndex(keyArray, keyIndex);
         CFStringRef value = CFDictionaryGetValue(dict, key);
-        
+
+        //  A customized license PList may hold e.g. Number objects, therefor, do some conversion...
+        CFTypeID type = CFGetTypeID (value);
+        if (type != CFStringGetTypeID ()) {
+            value = CFStringCreateWithFormat (NULL, NULL, CFSTR("%@"), value);
+            value = CFAutorelease (value);
+        }
+
         CFDataRef valueData = CFStringCreateExternalRepresentation(kCFAllocatorDefault,
                                                                    value,
                                                                    kCFStringEncodingUTF8,
